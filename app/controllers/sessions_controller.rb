@@ -69,7 +69,7 @@ class SessionsController < ApplicationController
 
     tgt = Tickets::TicketGrantingTicket.find_by_ticket(session['tgt'])
 
-    session['tgt'] = nil
+    reset_session
 
     if tgt
       Tickets::TicketGrantingTicket.transaction do
@@ -77,9 +77,7 @@ class SessionsController < ApplicationController
           st.destroy
         end
 
-        pgts = Tickets::ProxyGrantingTicket.find(:all,
-                                                 :conditions => [(Tickets::ServiceTicket.table_name)+".username = ?", tgt.username],
-                                                 :include => :service_ticket)
+        pgts = Tickets::ProxyGrantingTicket.includes(:service_ticket).where('service_ticket.username' => tgt.username)
         pgts.each do |pgt|
           pgt.destroy
         end
@@ -119,10 +117,10 @@ class SessionsController < ApplicationController
 
       if @pgt_url
         attrs = {
-                   service_ticket_id: ticket.id, 
-                   iou: "PGTIOU-" + Tickets::ProxyGrantingTicket.random_string(60),
-                   ticket: "Tickets::ProxyGrantingTicket" + Tickets::ProxyGrantingTicket.random_string(57)
-                 }
+          service_ticket_id: ticket.id, 
+          iou: "PGTIOU-" + Tickets::ProxyGrantingTicket.random_string(60),
+          ticket: "Tickets::ProxyGrantingTicket" + Tickets::ProxyGrantingTicket.random_string(57)
+        }
         pgt = Tickets::ProxyGrantingTicket.generate(env, attrs)
         @pgtiou = pgt.iou
       end
