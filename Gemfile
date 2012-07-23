@@ -3,10 +3,10 @@ source 'https://rubygems.org'
 gem 'rails', '3.2.6'
 gem 'bcrypt-ruby'
 gem 'crypt-isaac'
-gem 'sqlite3'
 gem 'configatron'
 gem 'builder'
 gem 'heroku'
+gem 'pg'
 
 group :assets do
   gem 'sass-rails',   '~> 3.2.3'
