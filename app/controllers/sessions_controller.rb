@@ -11,7 +11,7 @@ class SessionsController < ApplicationController
     end
 
     if params['redirection_loop_intercepted']
-      raise ::TSA::RedirectionLoop
+      error = ::TSA::RedirectionLoop.new
     end
 
     if @service
