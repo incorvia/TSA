@@ -108,7 +108,7 @@ class SessionsController < ApplicationController
 
     ticket, error = Tickets::ProxyTicket.validate(@service, @ticket)
 
-    @success = t && !@error
+    @success = t && !error
 
     if @success
       @username = ticket.username

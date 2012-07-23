@@ -15,22 +15,26 @@ module Tickets
 
       def validate(service, ticket, allow_proxy_tickets = false)
         if service.nil? || ticket.nil?
-          raise ::TSA::ParameterMissing
+          error = ::TSA::ParameterMissing.new
         end
 
         service_ticket = Tickets::ServiceTicket.find_by_ticket(ticket)
 
-        if service_ticket.consumed?
-          error =  ::TSA::TicketConsumed.new
-        elsif service_ticket.kind_of?(Tickets::ProxyTicket) && !allow_proxy_tickets
-          error =  ::TSA::InvalidTicket.new
-        elsif Time.now - service_ticket.created_on > configatron.maximum_unused_service_ticket_lifetime
-          error =  ::TSA::ExpiredTicket.new
-        elsif !service_ticket.matches_service? service
-          error =  ::TSA::InvalidService.new
-        end
+        if service_ticket
+          if service_ticket.consumed?
+            error =  ::TSA::TicketConsumed.new
+          elsif service_ticket.kind_of?(Tickets::ProxyTicket) && !allow_proxy_tickets
+            error =  ::TSA::InvalidTicket.new
+          elsif Time.now - service_ticket.created_on > configatron.maximum_unused_service_ticket_lifetime
+            error =  ::TSA::ExpiredTicket.new
+          elsif !service_ticket.matches_service? service
+            error =  ::TSA::InvalidService.new
+          end
 
-        service_ticket.consume!
+          service_ticket.consume!
+        else
+          error = ::TSA::InvalidTicket.new
+        end
 
         [service_ticket, error]
       end
