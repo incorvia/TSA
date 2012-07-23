@@ -59,7 +59,43 @@ class SessionsController < ApplicationController
       end
     else
       flash[:notice] = "Invalid credentials, please try again"
-      redirect_to "/login"
+      redirect_to request.referrer
+    end
+  end
+
+  def destroy
+    @service = clean_service_url(params['service'] || params['destination'])
+    @gateway = params['gateway'] == 'true' || params['gateway'] == '1'
+
+    tgt = Tickets::TicketGrantingTicket.find_by_ticket(session['tgt'])
+
+    session['tgt'] = nil
+
+    if tgt
+      Tickets::TicketGrantingTicket.transaction do
+        tgt.granted_service_tickets.each do |st|
+          st.destroy
+        end
+
+        pgts = Tickets::ProxyGrantingTicket.find(:all,
+                                                 :conditions => [(Tickets::ServiceTicket.table_name)+".username = ?", tgt.username],
+                                                 :include => :service_ticket)
+        pgts.each do |pgt|
+          pgt.destroy
+        end
+
+        tgt.destroy
+      end
+    end
+
+    @message = {:type => 'confirmation', :message => "You have successfully logged out"}
+
+    @lt = Tickets::LoginTicket.generate(env)
+
+    if @gateway && @service
+      redirect_to @service, status: 303
+    else
+      redirect_to 'login'
     end
   end
 

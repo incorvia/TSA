@@ -4,8 +4,9 @@ module Tickets
 
     include Utilities
 
-    belongs_to :granted_by_pgt,
-      :class_name => 'Tickets::ProxyGrantingTicket',
+    belongs_to :service_ticket
+    has_many :granted_by_pgt,
+      :class_name => 'Tickets::ProxyTicket',
       :foreign_key => :granted_by_pgt_id
 
     class << self
