@@ -6,6 +6,7 @@ gem 'crypt-isaac'
 gem 'sqlite3'
 gem 'configatron'
 gem 'builder'
+gem 'heroku'
 
 group :assets do
   gem 'sass-rails',   '~> 3.2.3'
