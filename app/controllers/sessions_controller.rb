@@ -41,6 +41,12 @@ class SessionsController < ApplicationController
     @service = clean_service_url(params['service'])
     @lt = params['lt']
 
+    if error = Tickets::LoginTicket.validate(@lt)
+      error = ::TSA::InvalidTicket.new
+      @lt = Tickets::LoginTicket.generate(env)
+      return render 'new', status: 500
+    end
+
     user = User.validate(params['username'].downcase, params['password'])
 
     if user

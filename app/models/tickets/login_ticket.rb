@@ -12,11 +12,12 @@ module Tickets
 
         if login_ticket.consumed?
           error = ::TSA::ConsumedLoginTicket.new
-        else Time.now - login_ticket.created_on > settings.config[:maximum_unused_login_ticket_lifetime]
-          error =  ::TSA::ExpiredLoginTicket.new
+        elsif Time.now - login_ticket.created_on > configatron.maximum_unused_login_ticket_lifetime
+          error =  ::TSA::ExpiredTicket.new
         end
 
         login_ticket.consume!
+        return error
       end
     end
   end
